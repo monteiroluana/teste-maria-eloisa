@@ -11,7 +11,7 @@
     crossorigin=""/>
 
     <style>
-        #map { height: 100vh }
+        #map { height: 100% }
     </style>
 </head>
 
@@ -34,6 +34,18 @@
             id: 'mapbox.streets', 
             accessToken: 'pk.eyJ1IjoibW9udGVpcm9sdWFuYSIsImEiOiJjam80Y3c1MDUxNnEyM3FwaDNxajFqZWF4In0.6KYMVXUlI5_Q6oSGJuBn2A' 
         }).addTo(map);
+
+
+        var path = 'https://raw.githubusercontent.com/monteiroluana/teste-maria-eloisa/master/teste.json'
+
+        fetch(path)//api de brownser
+        .then(response => response.json())
+        .then(data => {        
+            L.geoJSON(data).addTo(map);        
+        })
+        .catch(error => console.error(error))
+        
+
 
     </script>
 </body>
