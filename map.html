@@ -6,27 +6,44 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Map - Maria Eloisa </title>
     
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
     crossorigin=""/>
 
     <style>
-        #map { height: 100% }
+        html, body{margin:0; height: 100%;}
+        #map { height: 100vh; }
+        #otr { height: 100vh; width: 90vw;overflow: scroll;}
     </style>
 </head>
 
 <body>
-    <div id="map"></div>
+
+    <div class="row">
+        <div class="col-md-9">
+            <div id="map"></div>
+        </div>
+        <div id="otr" class="col-md-3"></div>
+    </div>
+    
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
      <!-- Make sure you put this AFTER Leaflet's CSS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
 
+    <script type="text/javascript" src="us-states.js"></script>
+
     <script>
         "use strict"
 
-        var map = L.map('map').setView([-15.690493, -47.822322], 10);
+        var map = L.map('map').setView([37.8, -96], 3);
 
         L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
             attribution: 'Luana Monteiro',
@@ -36,17 +53,65 @@
         }).addTo(map);
 
 
-        var path = 'https://raw.githubusercontent.com/monteiroluana/teste-maria-eloisa/master/teste.json'
-
-        fetch(path)//api de brownser
+        /*fetch('https://raw.githubusercontent.com/monteiroluana/teste-maria-eloisa/master/teste.json')
         .then(response => response.json())
         .then(data => {        
             L.geoJSON(data).addTo(map);        
         })
-        .catch(error => console.error(error))
+        .catch(error => console.error(error))*/
+
+        // get color depending on population density value
+        function getColor(d) {
+            return d > 1000 ? '#800026' :
+                    d > 500  ? '#BD0026' :
+                    d > 200  ? '#E31A1C' :
+                    d > 100  ? '#FC4E2A' :
+                    d > 50   ? '#FD8D3C' :
+                    d > 20   ? '#FEB24C' :
+                    d > 10   ? '#FED976' :
+                                '#FFEDA0';
+        }
+
+        function style(feature) {
+            return {
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                dashArray: '3',
+                fillOpacity: 0.7,
+                fillColor: getColor(feature.properties.density)
+            };
+        }
+
+        var geojson;
         
+        var selected_layer;
 
+        function onEachFeature(feature, layer) {
+            $("#otr").append(`<a href="#" class="btn" id="btn_${feature.id}">${feature.id}-${feature.properties.name}</a><br>`)
+            
+            $(`#btn_${feature.id}`).click(function(e){
+                geojson.resetStyle(selected_layer);
 
+                layer.setStyle({
+                    weight: 5,
+                    color: '#666',
+                    dashArray: '',
+                    fillOpacity: 0.7
+                });
+
+                selected_layer = layer; 
+
+                if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                    layer.bringToFront();
+                }                
+            });
+        }
+
+        geojson = L.geoJson(statesData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map);           
     </script>
 </body>
 
